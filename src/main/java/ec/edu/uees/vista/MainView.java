@@ -10,7 +10,7 @@ public class MainView extends JFrame {
     private JButton btnAtencion;
     private JLabel etiquetaVideo;
     private JButton btnAnterior, btnSiguiente, btnPausa;
-    private JPanel panelVideo; // Panel para el reproductor de video
+    private JPanel panelVideo, panelReproductor; // Panel separado para el reproductor
 
     public MainView() {
         configurarUI();
@@ -39,9 +39,11 @@ public class MainView extends JFrame {
         btnAtencion = new JButton("Atender Siguiente Paciente");
         panelAtencion.add(btnAtencion);
 
-        // Panel de videos
-        panelVideo = new JPanel(new BorderLayout()); // Inicializa el panel de video
-        etiquetaVideo = new JLabel(" ", SwingConstants.CENTER);
+        // Panel de videos (estructura mejorada)
+        panelVideo = new JPanel(new BorderLayout());
+        panelReproductor = new JPanel(new BorderLayout()); // Panel dedicado al reproductor
+
+        etiquetaVideo = new JLabel("Seleccione un video", SwingConstants.CENTER);
         etiquetaVideo.setFont(new Font("Arial", Font.BOLD, 16));
 
         JPanel controles = new JPanel();
@@ -52,12 +54,15 @@ public class MainView extends JFrame {
         controles.add(btnPausa);
         controles.add(btnSiguiente);
 
-        panelVideo.add(etiquetaVideo, BorderLayout.NORTH); // Añade la etiqueta al panel de video
-        panelVideo.add(controles, BorderLayout.SOUTH); // Añade los controles al panel de video
+        // Organización jerárquica clara
+        panelVideo.add(etiquetaVideo, BorderLayout.NORTH);
+        panelVideo.add(panelReproductor, BorderLayout.CENTER); // El reproductor ocupa el centro
+        panelVideo.add(controles, BorderLayout.SOUTH);
 
+        // Agrega los paneles principales a la ventana
         add(panelRegistro, BorderLayout.NORTH);
-        add(panelAtencion, BorderLayout.CENTER);
-        add(panelVideo, BorderLayout.SOUTH); // Añade el panel de video a la ventana principal
+        add(panelAtencion, BorderLayout.WEST); // Cambiado a WEST para dejar espacio al video
+        add(panelVideo, BorderLayout.CENTER); // El panel de video ahora es el elemento principal
     }
 
     // Getters
@@ -69,5 +74,6 @@ public class MainView extends JFrame {
     public JButton getBtnAnterior() { return btnAnterior; }
     public JButton getBtnSiguiente() { return btnSiguiente; }
     public JButton getBtnPausa() { return btnPausa; }
-    public JPanel getPanelVideo() { return panelVideo; } // Método para obtener el panel de video
+    public JPanel getPanelVideo() { return panelVideo; }
+    public JPanel getPanelReproductor() { return panelReproductor; } // Nuevo getter
 }

@@ -7,5 +7,7 @@ public class VideoNode {
 
     public VideoNode(String videoName) {
         this.videoName = videoName;
+        this.next = null;
+        this.prev = null;
     }
 }

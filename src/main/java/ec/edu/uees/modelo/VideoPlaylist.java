@@ -6,17 +6,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class VideoPlaylist {
-    private NodoVideo actual;
-
-    private static class NodoVideo {
-        String video;
-        NodoVideo siguiente;
-        NodoVideo anterior;
-
-        public NodoVideo(String video) {
-            this.video = video;
-        }
-    }
+    private VideoNode actual;
 
     public VideoPlaylist() {
         try (InputStream is = getClass().getResourceAsStream("/videos.txt");
@@ -34,47 +24,51 @@ public class VideoPlaylist {
             hacerCircular();
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Error Cargando videos");
+            JOptionPane.showMessageDialog(null, "Error Cargando videos: " + e.getMessage());
             agregarVideo("video_default.mp4");
             hacerCircular();
         }
     }
 
     private void agregarVideo(String video) {
-        NodoVideo nuevo = new NodoVideo(video);
+        VideoNode nuevo = new VideoNode(video);
         if (actual == null) {
             actual = nuevo;
         } else {
-            NodoVideo ultimo = actual;
-            while (ultimo.siguiente != null) {
-                ultimo = ultimo.siguiente;
+            VideoNode ultimo = actual;
+            while (ultimo.next != null) {
+                ultimo = ultimo.next;
             }
-            ultimo.siguiente = nuevo;
-            nuevo.anterior = ultimo;
+            ultimo.next = nuevo;
+            nuevo.prev = ultimo;
         }
     }
 
     private void hacerCircular() {
         if (actual != null) {
-            NodoVideo primero = actual;
-            NodoVideo ultimo = actual;
-            while (ultimo.siguiente != null) {
-                ultimo = ultimo.siguiente;
+            VideoNode primero = actual;
+            VideoNode ultimo = actual;
+            while (ultimo.next != null) {
+                ultimo = ultimo.next;
             }
-            ultimo.siguiente = primero;
-            primero.anterior = ultimo;
+            ultimo.next = primero;
+            primero.prev = ultimo;
         }
     }
 
     public void siguiente() {
-        actual = actual.siguiente;
+        if (actual != null && actual.next != null) {
+            actual = actual.next;
+        }
     }
 
     public void anterior() {
-        actual = actual.anterior;
+        if (actual != null && actual.prev != null) {
+            actual = actual.prev;
+        }
     }
 
     public String getActual() {
-        return actual != null ? actual.video : "Sin videos";
+        return actual != null ? actual.videoName : "Sin videos";
     }
 }

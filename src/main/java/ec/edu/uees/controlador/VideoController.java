@@ -2,32 +2,64 @@ package ec.edu.uees.controlador;
 
 import ec.edu.uees.modelo.VideoPlaylist;
 import ec.edu.uees.vista.MainView;
+import ec.edu.uees.util.VideoUtil;
 import uk.co.caprica.vlcj.player.component.EmbeddedMediaPlayerComponent;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class VideoController {
     private final VideoPlaylist modelo;
     private final MainView vista;
-    private boolean reproduciendo = true;
+    private boolean reproduciendo = false;
     private EmbeddedMediaPlayerComponent mediaPlayerComponent;
 
     public VideoController(VideoPlaylist modelo, MainView vista) {
         this.modelo = modelo;
         this.vista = vista;
+
+        // Asegúrate que la carpeta de videos existe
+        crearDirectorioVideos();
+
+        // Inicializa el reproductor
         this.mediaPlayerComponent = new EmbeddedMediaPlayerComponent();
         configurarUI();
         configurarListeners();
         actualizarEtiqueta();
     }
 
+    private void crearDirectorioVideos() {
+        try {
+            Path directorioVideos = Paths.get("videos");
+            if (!Files.exists(directorioVideos)) {
+                Files.createDirectories(directorioVideos);
+
+                // Opcional: extraer videos de recursos si es necesario
+                // Esto debería hacerse para cada video en la lista
+                String videoActual = modelo.getActual();
+                if (videoActual != null && !videoActual.equals("Sin videos")) {
+                    Path destinoVideo = directorioVideos.resolve(videoActual);
+                    VideoUtil.copiarVideo(videoActual, destinoVideo);
+                }
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(vista,
+                    "Error al crear directorio de videos: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     private void configurarUI() {
-        // Obtiene el panel de video de la vista y añade el reproductor
-        JPanel panelVideo = vista.getPanelVideo();
-        panelVideo.add(mediaPlayerComponent, BorderLayout.CENTER);
+        // Usa el panel específico para el reproductor
+        JPanel panelReproductor = vista.getPanelReproductor();
+        panelReproductor.add(mediaPlayerComponent, BorderLayout.CENTER);
+        panelReproductor.setPreferredSize(new Dimension(640, 360)); // Tamaño sugerido para el video
         vista.pack(); // Ajusta el tamaño de la ventana
+        vista.setLocationRelativeTo(null); // Centra la ventana
     }
 
     private void configurarListeners() {
@@ -58,10 +90,30 @@ public class VideoController {
     private void reproducirVideoActual() {
         String videoActual = modelo.getActual();
         if (videoActual != null && !videoActual.equals("Sin videos")) {
-            // Ruta completa del video en la carpeta temporal
+            // Verificar que el archivo existe
             Path rutaVideo = Path.of("videos", videoActual);
-            System.out.println("Intentando reproducir: " + rutaVideo.toAbsolutePath()); // Mensaje de depuración
-            mediaPlayerComponent.mediaPlayer().media().play(rutaVideo.toString());
+            File archivoVideo = rutaVideo.toFile();
+
+            if (!archivoVideo.exists()) {
+                JOptionPane.showMessageDialog(vista,
+                        "Video no encontrado: " + rutaVideo,
+                        "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Detiene la reproducción actual antes de iniciar una nueva
+            mediaPlayerComponent.mediaPlayer().controls().stop();
+
+            // Reproduce el video
+            boolean resultado = mediaPlayerComponent.mediaPlayer().media().play(rutaVideo.toString());
+            reproduciendo = resultado;
+
+            if (resultado) {
+                vista.getBtnPausa().setText("Pausar");
+                System.out.println("Reproduciendo: " + rutaVideo);
+            } else {
+                System.err.println("Error al reproducir: " + rutaVideo);
+            }
         }
     }
 
@@ -72,6 +124,4 @@ public class VideoController {
     public void iniciarReproduccion() {
         reproducirVideoActual();
     }
-
-
 }
