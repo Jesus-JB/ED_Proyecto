@@ -1,0 +1,5 @@
+Emergencia,1
+Fractura,2
+Dolor Severo,3
+Fiebre,4
+Consulta General,5
