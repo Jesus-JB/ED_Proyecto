@@ -4,6 +4,8 @@ import ec.edu.uees.modelo.VideoPlaylist;
 import ec.edu.uees.vista.MainView;
 import ec.edu.uees.util.VideoUtil;
 import uk.co.caprica.vlcj.player.component.EmbeddedMediaPlayerComponent;
+import uk.co.caprica.vlcj.player.base.MediaPlayer;
+import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -27,6 +29,33 @@ public class VideoController {
 
         // Inicializa el reproductor
         this.mediaPlayerComponent = new EmbeddedMediaPlayerComponent();
+
+        // Agregar el listener para detectar cuando termina un video
+        this.mediaPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(
+                new MediaPlayerEventAdapter() {
+                    @Override
+                    public void finished(MediaPlayer mediaPlayer) {
+                        // Cuando el video termina, reproducir el siguiente automáticamente
+                        SwingUtilities.invokeLater(() -> {
+                            modelo.siguiente();
+                            reproducirVideoActual();
+                            actualizarEtiqueta();
+                        });
+                    }
+
+                    @Override
+                    public void error(MediaPlayer mediaPlayer) {
+                        // En caso de error, intentar con el siguiente video
+                        SwingUtilities.invokeLater(() -> {
+                            System.err.println("Error en la reproducción, pasando al siguiente video");
+                            modelo.siguiente();
+                            reproducirVideoActual();
+                            actualizarEtiqueta();
+                        });
+                    }
+                }
+        );
+
         configurarUI();
         configurarListeners();
         actualizarEtiqueta();
@@ -131,5 +160,15 @@ public class VideoController {
             reproduciendo = false;
             vista.getBtnPausa().setText("Reproducir");
         }
+    }
+
+    // Método para verificar si hay reproducción en curso
+    public boolean estaReproduciendo() {
+        return reproduciendo;
+    }
+
+    // Método para obtener el video actual
+    public String getVideoActual() {
+        return modelo.getActual();
     }
 }
