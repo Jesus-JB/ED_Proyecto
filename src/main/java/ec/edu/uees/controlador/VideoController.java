@@ -124,4 +124,12 @@ public class VideoController {
     public void iniciarReproduccion() {
         reproducirVideoActual();
     }
+
+    public void detenerReproduccion() {
+        if (mediaPlayerComponent != null && reproduciendo) {
+            mediaPlayerComponent.mediaPlayer().controls().stop();
+            reproduciendo = false;
+            vista.getBtnPausa().setText("Reproducir");
+        }
+    }
 }
